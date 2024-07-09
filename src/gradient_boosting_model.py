@@ -35,10 +35,10 @@ def gradient_boosting_model(X: np.ndarray,
     assert len(X.shape) == 2, 'X must be a matrix'
     assert isinstance(y, np.ndarray), 'y must be a numpy array'
     assert len(y.shape) == 1, 'y must be a vector'
-    assert callable(g_base_learner), 'g_base_learner must be a function'
-    assert callable(neg_grad_objective_function), 'neg_grad_objective_function must be a function'
-    assert isinstance(M, int), 'M must be an integer'
-    assert isinstance(eta, float), 'eta must be a float'
+    assert g_base_learner is None or callable(g_base_learner), 'g_base_learner must be a function'
+    assert neg_grad_objective_function is None or callable(neg_grad_objective_function), 'neg_grad_objective_function must be a function'
+    assert M is None or isinstance(M, int), 'M must be an integer'
+    assert eta is None or isinstance(eta, float), 'eta must be a float'
 
     n, p = X.shape
 
@@ -81,5 +81,3 @@ def gradient_boosting_model(X: np.ndarray,
         g_list.append(create_gm(m))
 
     return g_list
-
-gradient_boosting_model()
