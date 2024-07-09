@@ -1,15 +1,18 @@
 import numpy as np
 
 from sklearn.tree import DecisionTreeRegressor
+from typing import List, Callable, Optional
 
 
-def gradient_boosting_model(X: np.ndarray, 
-                            y: np.ndarray, 
-                            g_base_learner=None, 
-                            neg_grad_objective_function=None,
-                            M: int=None,
-                            eta: float = 0.3,
-                            **kwargs):
+def gradient_boosting_model(
+    X: np.ndarray, 
+    y: np.ndarray, 
+    g_base_learner: Optional[Callable]=None, 
+    neg_grad_objective_function: Optional[Callable]=None,
+    M: int=None,
+    eta: float = 0.3,
+    **kwargs
+) -> List[Callable]:
     '''
     Gradient Boosting Model
 
@@ -29,6 +32,11 @@ def gradient_boosting_model(X: np.ndarray,
         The learning rate
     kwargs : dict
         Additional arguments for the base learner
+
+    Returns:
+    --------
+    List[Callable]
+        List of boosting functions
     '''
     
     assert isinstance(X, np.ndarray), 'X must be a numpy array'
