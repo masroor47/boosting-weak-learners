@@ -1,4 +1,5 @@
 import numpy as np
+from tqdm import tqdm
 
 from sklearn.tree import DecisionTreeRegressor
 from typing import List, Callable, Optional
@@ -62,19 +63,19 @@ def gradient_boosting_model(
             # negative gradient for binary classification
             def neg_grad_objective_function(y, y_hat):
                 return y - 1 / (1 + np.exp(-y_hat))
-        g_0 = lambda X_star, y: np.full(X_star.shape[0], np.exp(np.mean(y)) / (1 + np.exp(np.mean(y))))
+        g_0 = lambda X_star: np.full(X_star.shape[0], np.exp(np.mean(y)) / (1 + np.exp(np.mean(y))))
 
     else:
         if neg_grad_objective_function is None:
             # negative gradient for mean squared error
             def neg_grad_objective_function(y, y_hat):
                 return 2 * (y - y_hat)
-        g_0 = lambda X_star, y: np.full(X_star.shape[0], np.mean(y))
+        g_0 = lambda X_star: np.full(X_star.shape[0], np.mean(y))
 
 
     g_list = [g_0]
     
-    for m in range(n_iterations):
+    for m in tqdm(range(n_iterations), desc="Boosting Progress", unit="iteration"):
         y_hat = sum(g(X) for g in g_list)
         neg_gradient = neg_grad_objective_function(y, y_hat)
         
