@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from gradient_boosting_model import gradient_boosting_model
@@ -24,9 +25,9 @@ def train_and_evaluate(X_train, y_train, X_val, y_val, n_iterations, eta):
 if __name__ == '__main__':
     # Load and preprocess data
     diamonds = sns.load_dataset('diamonds')
+    diamonds = pd.get_dummies(diamonds, columns=['cut', 'color', 'clarity'], drop_first=True)
     X = diamonds.drop('price', axis=1)
     y = diamonds['price']
-    X = X.select_dtypes(include=[np.number])
 
     # Split data into train+validation and test sets
     X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=0.2, random_state=SEED)
@@ -39,19 +40,20 @@ if __name__ == '__main__':
     y_train, y_val, y_test = map(lambda x: x.to_numpy(), [y_train, y_val, y_test])
 
     # Model selection
-    # n_iterations_list = [50, 
-    #                      75, 
-    #                      100, 
-    #                      125, 
-    #                      140, 
-    #                      150, 
-    #                      175, 
-    #                      200, 
-    #                      300, 
-    #                      500]
+    n_iterations_list = [50, 
+                         75,
+                         100, 
+                         125, 
+                        #  140, 
+                         150, 
+                        #  175, 
+                        #  200, 
+                        #  300, 
+                        #  500]
+    ]
     
     # n_iterations from 25 to 500 in steps of 25
-    n_iterations_list = [ 25 * i for i in range(1, 21)]
+    # n_iterations_list = [ 25 * i for i in range(1, 11)]
     eta = 0.3
 
     best_model = None
