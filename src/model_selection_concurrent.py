@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from gradient_boosting_model import gradient_boosting_model
@@ -18,6 +19,7 @@ def evaluate_model(model, X, y):
 if __name__ == '__main__':
     # Load and preprocess data
     diamonds = sns.load_dataset('diamonds')
+    diamonds = pd.get_dummies(diamonds, columns=['cut', 'color', 'clarity'], drop_first=True)
     X = diamonds.drop('price', axis=1)
     y = diamonds['price']
     X = X.select_dtypes(include=[np.number])
@@ -71,7 +73,7 @@ if __name__ == '__main__':
     plt.xlabel('Number of Iterations')
     plt.ylabel('Validation MSE')
     plt.title('Validation MSE vs Number of Iterations')
-    plt.savefig('validation_mse_plot.png')
+    plt.savefig('results/validation_mse_plot.png')
     plt.close()
 
     # Plot residuals
@@ -83,5 +85,5 @@ if __name__ == '__main__':
     plt.xlabel('Predicted Values')
     plt.ylabel('Residuals')
     plt.title('Residual Plot')
-    plt.savefig('residual_plot.png')
+    plt.savefig('results/residual_plot.png')
     plt.close()
