@@ -49,13 +49,12 @@ def gradient_boosting_model(
     assert n_iterations is None or isinstance(n_iterations, int), 'M must be an integer'
     assert eta is None or isinstance(eta, float), 'eta must be a float'
 
-    n_iterations, _ = X.shape
+    n_samples, _ = X.shape
 
     # if base learner is None, it should be a decision tree
     base_learner = base_learner or DecisionTreeRegressor
     is_classification = len(np.unique(y)) == 2
-
-
+    n_iterations = n_iterations or (1000 if is_classification else 500)
 
     # see if it's a regression or classification problem
     if is_classification:
