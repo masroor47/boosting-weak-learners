@@ -1,4 +1,5 @@
 import numpy as np
+from tqdm import tqdm
 
 from sklearn.tree import DecisionTreeRegressor
 from typing import List, Callable, Optional
@@ -7,9 +8,9 @@ from typing import List, Callable, Optional
 def gradient_boosting_model(
     X: np.ndarray, 
     y: np.ndarray, 
-    g_base_learner: Optional[Callable]=None, 
+    base_learner: Optional[Callable]=None, 
     neg_grad_objective_function: Optional[Callable]=None,
-    M: int=None,
+    n_iterations: int=None,
     eta: float = 0.3,
     **kwargs
 ) -> List[Callable]:
@@ -22,11 +23,11 @@ def gradient_boosting_model(
         The input data matrix
     y : np.ndarray
         The target vector
-    g_base_learner : function
+    base_learner : function
         The base learner function
     neg_grad_objective_function : function
         The negative gradient of the objective function
-    M : int
+    n_iterations : int
         The number of iterations
     eta : float
         The learning rate
@@ -43,49 +44,43 @@ def gradient_boosting_model(
     assert len(X.shape) == 2, 'X must be a matrix'
     assert isinstance(y, np.ndarray), 'y must be a numpy array'
     assert len(y.shape) == 1, 'y must be a vector'
-    assert g_base_learner is None or callable(g_base_learner), 'g_base_learner must be a function'
+    assert base_learner is None or callable(base_learner), 'g_base_learner must be a function'
     assert neg_grad_objective_function is None or callable(neg_grad_objective_function), 'neg_grad_objective_function must be a function'
-    assert M is None or isinstance(M, int), 'M must be an integer'
+    assert n_iterations is None or isinstance(n_iterations, int), 'M must be an integer'
     assert eta is None or isinstance(eta, float), 'eta must be a float'
 
-    n, p = X.shape
+    n_samples, _ = X.shape
 
     # if base learner is None, it should be a decision tree
-    if g_base_learner is None:
-        g_base_learner = DecisionTreeRegressor
+    base_learner = base_learner or DecisionTreeRegressor
+    is_classification = len(np.unique(y)) == 2
+    n_iterations = n_iterations or (1000 if is_classification else 500)
 
     # see if it's a regression or classification problem
-    if len(np.unique(y)) == 2:
-        is_classification = True
-        M = 1000 if M is None else M
+    if is_classification:
         if neg_grad_objective_function is None:
             # negative gradient for binary classification
-            neg_grad_objective_function = lambda y, g_list: y - 1 / (1 + np.exp(-np.sum([g.predict(X) for g in g_list], axis=0)))
-        
-        g_0 = lambda X_star, y: np.full(X_star.shape[0], np.exp(np.mean(y)) / (1 + np.exp(np.mean(y))))
+            def neg_grad_objective_function(y, y_hat):
+                return y - 1 / (1 + np.exp(-y_hat))
+        g_0 = lambda X_star: np.full(X_star.shape[0], np.exp(np.mean(y)) / (1 + np.exp(np.mean(y))))
+
     else:
-        is_classification = False
-        M = 500 if M is None else M
         if neg_grad_objective_function is None:
             # negative gradient for mean squared error
-            neg_grad_objective_function = lambda y, y_hat: 2 * (y - y_hat)
-
-        g_0 = lambda X_star, y: np.full(X_star.shape[0], np.mean(y))
+            def neg_grad_objective_function(y, y_hat):
+                return 2 * (y - y_hat)
+        g_0 = lambda X_star: np.full(X_star.shape[0], np.mean(y))
 
 
     g_list = [g_0]
-    def create_gm(m):
-        def gm(X_star):
-            y_hat_m = np.zeros(n)
-            for k in range(m):
-                y_hat_m += g_list[k](X)
-            
-            neg_gradient_m = neg_grad_objective_function(y, y_hat_m)
-            g_tilde_m = g_base_learner(X, neg_gradient_m)
-            return g_list[m-1](X_star) + eta * g_tilde_m(X_star)
-        return gm
-
-    for m in range(M):
-        g_list.append(create_gm(m))
+    
+    for m in tqdm(range(n_iterations), desc="Boosting Progress", unit="iteration"):
+        y_hat = sum(g(X) for g in g_list)
+        neg_gradient = neg_grad_objective_function(y, y_hat)
+        
+        g_m = base_learner(**kwargs)
+        g_m.fit(X, neg_gradient)
+        
+        g_list.append(lambda X_star, g_m=g_m: eta * g_m.predict(X_star))
 
     return g_list
