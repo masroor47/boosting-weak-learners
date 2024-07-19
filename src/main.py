@@ -10,25 +10,17 @@ from datetime import datetime
 
 SEED = 42
 
-def ensure_results_directory():
+def write_results_to_file(model_label, results_text):
     results_dir = os.path.join(os.getcwd(), 'results/text')
-    if not os.path.exists(results_dir):
-        os.makedirs(results_dir)
-    return results_dir
-
-def write_results_to_file(results_dir, model_label, results_text):
-    timestamp = datetime.now().strftime("%B %d %Y %H:%M:%S")  
-    filename = f"{model_label.replace(' ', '_').lower()}_results ({timestamp}).txt"
-    file_path = os.path.join(results_dir, filename)
-    
+    os.makedirs(results_dir, exist_ok=True)  # This will create the directory if it doesn't exist
+    file_path = os.path.join(results_dir, f"{model_label.replace(' ', '_').lower()}_results ({datetime.now().strftime("%B %d %Y %H:%M:%S")  }).txt")
     with open(file_path, 'w') as f:
         f.write(results_text)
     
     print(f"Results written to: {file_path}")
 
+
 if __name__ == '__main__':
-    results_dir = ensure_results_directory()
-    
     diamonds = sns.load_dataset('diamonds')
     diamonds = pd.get_dummies(diamonds, drop_first=True)
 
@@ -63,4 +55,4 @@ if __name__ == '__main__':
         results_text += '---\n'
         
         print(results_text)
-        write_results_to_file(results_dir, model_label, results_text)
+        write_results_to_file(model_label, results_text)
