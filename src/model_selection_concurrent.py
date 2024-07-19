@@ -36,9 +36,9 @@ if __name__ == '__main__':
 
     # Model selection
     n_iterations_list = [50, 
-                        100, 
-                        150,
-                        200, 
+                        # 100, 
+                        # 150,
+                        # 200, 
     ]
                         # 300, 
                         # 500]
