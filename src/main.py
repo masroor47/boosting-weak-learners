@@ -13,7 +13,9 @@ SEED = 42
 def write_results_to_file(model_label, results_text):
     results_dir = os.path.join(os.getcwd(), 'results/text')
     os.makedirs(results_dir, exist_ok=True)  # This will create the directory if it doesn't exist
-    file_path = os.path.join(results_dir, f"{model_label.replace(' ', '_').lower()}_results ({datetime.now().strftime("%B %d %Y %H:%M:%S")  }).txt")
+    timestamp = datetime.now().strftime("%B %d %Y %H:%M:%S")
+    file_path = os.path.join(results_dir, f"{model_label.replace(' ', '_').lower()}_results ({timestamp}).txt")
+    
     with open(file_path, 'w') as f:
         f.write(results_text)
     
@@ -25,7 +27,7 @@ if __name__ == '__main__':
     diamonds = pd.get_dummies(diamonds, drop_first=True)
 
     base_learners = {
-        "Linear model": WeakLinearModel,
+        "Ride linear model": WeakLinearModel,
         "Shallow trees": None, # this set to None as the default fallback in gradient_boosting_model is DecisionTreeRegressor
     }
 
